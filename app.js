@@ -1,15 +1,6 @@
-// UDP Hub — bubble navigation
-// Generic node-graph engine: data/graph.json defines the tree of bubbles
-// (root -> groups -> courses/panels). New top-level areas (Negocios, Finanzas,
-// Tareas, Jarvis, etc.) are added by editing graph.json — no app.js changes needed
-// unless they need a brand-new panel type.
-//
-// Data sources:
-//   data/graph.json        -> navigation tree (which bubbles exist, in what order)
-//   data/manifest.json     -> course files (Notes/Assignments/Exams/Syllabus per course)
-//   data/canvas.json       -> Canvas courses/assignments (filled once the Canvas API is wired up)
-//   data/evaluaciones.json -> upcoming evaluations synced from Gmail
-//   data/resumen.json      -> weekly summary (filled by the scheduled task)
+// UDP Hub — navegacion por burbujas (con backend: Canvas + Jarvis)
+// data/graph.json define el arbol de burbujas. Jarvis vive como chat arriba.
+// Backend (Cloudflare Worker) sirve Canvas en vivo y las respuestas de Jarvis.
 
 const stage = document.getElementById('stage');
 const centerBubble = document.getElementById('center-bubble');
@@ -22,12 +13,15 @@ const panelTitle = document.getElementById('panelTitle');
 const panelBody = document.getElementById('panelBody');
 const closePanelBtn = document.getElementById('closePanel');
 
-let graph = null;       // { root, nodes: { id: {label, icon, type, children?, slug?, note?} } }
-let manifest = null;    // { courses: [...] }
+let graph = null;
+let manifest = null;
 let extra = { canvas: null, evaluaciones: null, resumen: null };
-let history = [];       // stack of node ids for the bubble-ring views (not panels)
+let history = [];
 
 const CAT_ICON_FALLBACK = '📁';
+
+// URL del backend (Cloudflare Worker) que sirve Canvas y Jarvis.
+const BACKEND = 'https://hub.vicentevargasblanco.workers.dev';
 
 init();
 initEarth();
@@ -73,7 +67,6 @@ function goBack() {
   renderCurrentNode(true);
 }
 
-// Returns the list of {id, label, icon, count?} bubbles to show for a node.
 function childItems(n) {
   if (n.type === 'course') {
     const course = (manifest.courses || []).find(c => c.slug === n.slug);
@@ -102,7 +95,6 @@ function renderCurrentNode(animate = false) {
   backBtn.classList.toggle('hidden', history.length <= 1);
   closePanel();
 
-  // Acerca/aleja la Tierra segun la profundidad de navegacion.
   if (window.__earth) window.__earth.setDepth(history.length);
 
   if (history.length <= 1) {
@@ -113,16 +105,6 @@ function renderCurrentNode(animate = false) {
   }
 }
 
-// Posicion de la burbuja i (de count) en el anillo centrado del nivel raiz.
-function ringXY(rect, i, count, rf) {
-  const cx = rect.width / 2, cy = rect.height * 0.5;
-  const r = Math.min(rect.width, rect.height) * rf;
-  const a = (-90 + (360 / count) * i) * (Math.PI / 180);
-  return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
-}
-
-// Vista raiz: burbuja central UDP + anillo de areas alrededor.
-// Coloca una burbuja en (x,y), animando su entrada desde (fx,fy) si corresponde.
 function placeFrom(el, x, y, fx, fy, fs, delay, animate) {
   el.style.left = x + 'px';
   el.style.top = y + 'px';
@@ -143,7 +125,6 @@ function placeFrom(el, x, y, fx, fy, fs, delay, animate) {
   }
 }
 
-// Boton de edicion (3 puntos) en una burbuja.
 function ensureEditDot(el, id, parentId) {
   const old = el.querySelector(':scope > .edit-dot');
   if (old) old.remove();
@@ -156,7 +137,6 @@ function ensureEditDot(el, id, parentId) {
   el.appendChild(eb);
 }
 
-// Crea el elemento de una burbuja con su icono, etiqueta, click y boton de edicion.
 function makeBubble(sizeClass, item, parentId, onClick) {
   const el = document.createElement('div');
   el.className = 'bubble ' + sizeClass;
@@ -170,7 +150,6 @@ function makeBubble(sizeClass, item, parentId, onClick) {
   return el;
 }
 
-// Vista raiz: ancla (principal) a la IZQUIERDA + sus areas en arco hacia la derecha.
 function renderRing(n, animate) {
   const curId = history[history.length - 1];
   centerBubble.classList.remove('hidden');
@@ -190,7 +169,7 @@ function renderRing(n, animate) {
   const m = items.length;
   items.forEach((item, j) => {
     const t = m > 1 ? j / (m - 1) : 0.5;
-    const ang = (-80 + 160 * t) * (Math.PI / 180); // arco a la derecha del ancla
+    const ang = (-80 + 160 * t) * (Math.PI / 180);
     const x = ax + RR * Math.cos(ang);
     const y = ay + RR * Math.sin(ang);
     drawLine(ax, ay, x, y);
@@ -199,9 +178,6 @@ function renderRing(n, animate) {
   });
 }
 
-// Vista expandida: la burbuja seleccionada se agranda y se ancla a la
-// izquierda-centro; sus hermanas se encogen a su izquierda; sus hijas brotan
-// de ella hacia la derecha, conectadas por lineas a su burbuja superior.
 function renderExpanded(parentNode, selectedId, animate) {
   if (!parentNode) return;
   centerBubble.classList.add('hidden');
@@ -218,7 +194,6 @@ function renderExpanded(parentNode, selectedId, animate) {
   const selNode = node(selectedId) || {};
   const others = siblings.filter(it => it.id !== selectedId);
 
-  // Burbuja principal (seleccionada): sobria y mas pequena. Click = volver.
   const big = document.createElement('div');
   big.className = 'bubble expanded';
   big.innerHTML = `<span class="bubble-icon">${selNode.icon || selItem.icon || '•'}</span><span class="bubble-label">${escapeHtml(selNode.label || selItem.label || '')}</span>`;
@@ -226,12 +201,11 @@ function renderExpanded(parentNode, selectedId, animate) {
   ensureEditDot(big, selectedId, parentId);
   placeFrom(big, ax, ay, ax, ay, 0.78, 0, animate);
 
-  // Hermanas (resto del nivel) encogidas, en arco a la izquierda.
   const RL = M * 0.30;
   const k = others.length;
   others.forEach((it, j) => {
     const t = k > 1 ? j / (k - 1) : 0.5;
-    const ang = (118 + 124 * t) * (Math.PI / 180); // izquierda
+    const ang = (118 + 124 * t) * (Math.PI / 180);
     const x = ax + RL * Math.cos(ang);
     const y = ay + RL * Math.sin(ang);
     const el = makeBubble('shrunk', it, parentId, () => {
@@ -242,13 +216,12 @@ function renderExpanded(parentNode, selectedId, animate) {
     placeFrom(el, x, y, ax, ay, 1.0, j * 25, animate);
   });
 
-  // Sub-burbujas (hijas de la seleccionada): brotan de la principal hacia la derecha.
   const subs = childItems(selNode);
   const RR = M * 0.36;
   const m = subs.length;
   subs.forEach((it, j) => {
     const t = m > 1 ? j / (m - 1) : 0.5;
-    const ang = (-62 + 124 * t) * (Math.PI / 180); // derecha
+    const ang = (-62 + 124 * t) * (Math.PI / 180);
     const x = ax + RR * Math.cos(ang);
     const y = ay + RR * Math.sin(ang);
     drawLine(ax, ay, x, y);
@@ -258,16 +231,13 @@ function renderExpanded(parentNode, selectedId, animate) {
 }
 
 function onBubbleClick(item, parentNode) {
-  // Mini-zoom de la Tierra cada vez que se abre una burbuja.
   if (window.__earth) window.__earth.pulse();
-
   if (item.categoryRef) {
     openCategoryPanel(item.courseRef, item.categoryRef);
     return;
   }
   const childNode = node(item.id);
   if (!childNode) return;
-
   if (childNode.type === 'group' || childNode.type === 'course') {
     history.push(item.id);
     renderCurrentNode(true);
@@ -284,7 +254,6 @@ function setCenter(icon, label) {
 function clearField(animate) {
   linesSvg.innerHTML = '';
   if (!animate) { field.innerHTML = ''; return; }
-  // Desliza las burbujas actuales hacia los lados antes de quitarlas.
   const rect = stage.getBoundingClientRect();
   const cx = rect.width / 2;
   Array.from(field.children).forEach(el => {
@@ -297,47 +266,6 @@ function clearField(animate) {
   });
 }
 
-function layoutRing(items, bind, sizeClass, animate) {
-  const rect = stage.getBoundingClientRect();
-  const cx = rect.width / 2;
-  const cy = rect.height * 0.5;
-  const radius = Math.min(rect.width, rect.height) * (sizeClass === 'main' ? 0.33 : 0.30);
-
-  items.forEach((item, i) => {
-    const angle = (-90 + (360 / items.length) * i) * (Math.PI / 180);
-    const x = cx + radius * Math.cos(angle);
-    const y = cy + radius * Math.sin(angle);
-    const dir = x < cx ? -1 : 1;
-
-    const el = document.createElement('div');
-    el.className = `bubble ${sizeClass}`;
-    el.style.left = `${x}px`;
-    el.style.top = `${y}px`;
-    el.innerHTML = `<span class="bubble-icon">${item.icon}</span><span class="bubble-label">${item.label}</span>`;
-
-    if (animate) {
-      // Entra deslizandose desde el lado correspondiente.
-      el.style.transition = 'none';
-      el.style.opacity = '0';
-      el.style.transform = `translate(calc(-50% + ${dir * 90}px), -50%) scale(0.85)`;
-      field.appendChild(el);
-      bind(item, el);
-      drawLine(cx, cy, x, y);
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        el.style.transition = '';
-        el.style.transitionDelay = `${i * 35}ms`;
-        el.style.transform = 'translate(-50%, -50%)';
-        el.style.opacity = '1';
-      }));
-    } else {
-      el.style.transform = 'translate(-50%, -50%)';
-      field.appendChild(el);
-      bind(item, el);
-      drawLine(cx, cy, x, y);
-    }
-  });
-}
-
 function drawLine(x1, y1, x2, y2) {
   const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
   line.setAttribute('x1', x1);
@@ -347,20 +275,23 @@ function drawLine(x1, y1, x2, y2) {
   linesSvg.appendChild(line);
 }
 
-function openPanel(title) {
-  panelTitle.textContent = title;
-  panel.classList.remove('hidden');
-}
-
-function closePanel() {
-  panel.classList.add('hidden');
-  panelBody.innerHTML = '';
-}
+function openPanel(title) { panelTitle.textContent = title; panel.classList.remove('hidden'); }
+function closePanel() { panel.classList.add('hidden'); panelBody.innerHTML = ''; }
 
 function fmtSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function fmtDate(iso) {
+  if (!iso) return 'sin fecha';
+  try {
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString('es-CL', { day: '2-digit', month: 'short' }) + ' ' +
+           d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+  } catch (e) { return iso; }
 }
 
 function openCategoryPanel(course, cat) {
@@ -380,7 +311,6 @@ function openCategoryPanel(course, cat) {
   `).join('');
 }
 
-// Dispatches a node's panel:* type to its renderer.
 function openPanelForNode(id, n) {
   if (n.type === 'panel:canvas') return renderCanvasPanel();
   if (n.type === 'panel:evaluaciones') return renderEvaluacionesPanel();
@@ -390,33 +320,34 @@ function openPanelForNode(id, n) {
   if (n.type === 'panel:placeholder') return renderPlaceholderPanel(n);
 }
 
-function pendingBlock(msg) {
-  return `<div class="empty-state">${msg}</div>`;
-}
+function pendingBlock(msg) { return `<div class="empty-state">${msg}</div>`; }
 
-function renderCanvasPanel() {
+async function renderCanvasPanel() {
   openPanel('Canvas');
-  const data = extra.canvas;
-  if (!data || data.status === 'pending_setup') {
-    panelBody.innerHTML = pendingBlock('Canvas todavía no está conectado en vivo. El dominio (udp.instructure.com) está bloqueado para conexiones directas desde este entorno — necesita un pequeño servidor intermedio (function serverless) que guarde el token de forma segura. En cuanto esté desplegado, aquí aparecerán tus cursos y tareas próximas.');
-    return;
+  panelBody.innerHTML = `<div class="empty-state">Cargando tus cursos desde Canvas…</div>`;
+  try {
+    const res = await fetch(BACKEND + '/canvas/summary', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const courses = (data && data.courses) || [];
+    if (!courses.length) {
+      panelBody.innerHTML = pendingBlock('No hay cursos o tareas próximas en Canvas por ahora.');
+      return;
+    }
+    panelBody.innerHTML = courses.map(c => `
+      <div class="summary-card">
+        <strong>${escapeHtml(c.name)}</strong>
+        ${(c.assignments || []).map(a => `
+          <div class="evalu-item" style="margin-top:8px;">
+            <div>${escapeHtml(a.name)}</div>
+            <div class="file-meta">Vence: ${escapeHtml(fmtDate(a.due_at))}</div>
+          </div>
+        `).join('') || '<div class="file-meta">Sin tareas próximas</div>'}
+      </div>
+    `).join('');
+  } catch (e) {
+    panelBody.innerHTML = pendingBlock('No se pudo conectar con Canvas. Verifica que el backend esté activo y el token configurado. (' + escapeHtml(String((e && e.message) || e)) + ')');
   }
-  const courses = data.courses || [];
-  if (!courses.length) {
-    panelBody.innerHTML = pendingBlock('No hay tareas próximas en Canvas por ahora.');
-    return;
-  }
-  panelBody.innerHTML = courses.map(c => `
-    <div class="summary-card">
-      <strong>${escapeHtml(c.name)}</strong>
-      ${(c.assignments || []).map(a => `
-        <div class="evalu-item" style="margin-top:8px;">
-          <div>${escapeHtml(a.name)}</div>
-          <div class="file-meta">Vence: ${escapeHtml(a.due_at || 'sin fecha')}</div>
-        </div>
-      `).join('') || '<div class="file-meta">Sin tareas pendientes</div>'}
-    </div>
-  `).join('');
 }
 
 function renderEvaluacionesPanel() {
@@ -449,7 +380,7 @@ function renderResumenPanel() {
   openPanel('Resumen semanal');
   const data = extra.resumen;
   if (!data || !data.weekOf) {
-    panelBody.innerHTML = pendingBlock('Aún no se ha generado el primer resumen semanal. Se genera automáticamente cada semana y también llega a tu correo (como borrador, ya que la cuenta conectada solo permite redactar borradores, no enviar correos directamente).');
+    panelBody.innerHTML = pendingBlock('Aún no se ha generado el primer resumen semanal. Se genera automáticamente cada semana y también llega a tu correo (como borrador).');
     return;
   }
   panelBody.innerHTML = `
@@ -466,21 +397,15 @@ function renderAvisosPanel() {
   const day = saved.day || 'domingo';
   const time = saved.time || '19:00';
   const channel = saved.channel || 'correo';
-
   panelBody.innerHTML = `
-    <div class="config-row">
-      <span>Día</span>
+    <div class="config-row"><span>Día</span>
       <select id="cfgDay">
         ${['lunes','martes','miércoles','jueves','viernes','sábado','domingo'].map(d =>
           `<option value="${d}" ${d === day ? 'selected' : ''}>${d}</option>`).join('')}
       </select>
     </div>
-    <div class="config-row">
-      <span>Hora</span>
-      <input id="cfgTime" type="time" value="${time}" />
-    </div>
-    <div class="config-row">
-      <span>Aviso por</span>
+    <div class="config-row"><span>Hora</span><input id="cfgTime" type="time" value="${time}" /></div>
+    <div class="config-row"><span>Aviso por</span>
       <select id="cfgChannel">
         <option value="correo" ${channel === 'correo' ? 'selected' : ''}>Correo (borrador Gmail)</option>
         <option value="pagina" ${channel === 'pagina' ? 'selected' : ''}>Solo en esta página</option>
@@ -488,19 +413,14 @@ function renderAvisosPanel() {
       </select>
     </div>
     <button class="save-btn" id="cfgSave">Guardar preferencia</button>
-    <div class="file-meta" style="margin-top:10px;">
-      Esto guarda tu preferencia en este dispositivo. Para que el resumen semanal realmente se genere a esa hora,
-      avísale a Claude en el chat el día/hora que elegiste así se crea o actualiza la tarea programada.
-    </div>
+    <div class="file-meta" style="margin-top:10px;">Esto guarda tu preferencia en este dispositivo. Para que el resumen se genere a esa hora, avísale a Claude el día/hora elegido.</div>
   `;
-
   document.getElementById('cfgSave').addEventListener('click', () => {
-    const value = {
+    localStorage.setItem('udp_hub_avisos', JSON.stringify({
       day: document.getElementById('cfgDay').value,
       time: document.getElementById('cfgTime').value,
       channel: document.getElementById('cfgChannel').value,
-    };
-    localStorage.setItem('udp_hub_avisos', JSON.stringify(value));
+    }));
     document.getElementById('cfgSave').textContent = 'Guardado ✓';
     setTimeout(() => { document.getElementById('cfgSave').textContent = 'Guardar preferencia'; }, 1500);
   });
@@ -511,12 +431,7 @@ function renderJarvisPanel(n) {
   panelBody.innerHTML = `
     <div class="summary-card">
       <strong>El chat de Jarvis está siempre arriba ↑</strong>
-      <div class="file-meta" style="margin-top:8px;">Ahora Jarvis vive como un chat fijo en la parte superior de la pantalla. Escríbele desde ahí en cualquier momento.</div>
-    </div>
-    <div class="empty-state" style="text-align:left; padding-left:4px;">
-      Por ahora responde en modo de prueba (respuestas de ejemplo). Para que converse de verdad con IA — y luego con voz —
-      necesita un pequeño backend propio que reciba tu mensaje, llame a la API de forma segura desde el servidor y devuelva
-      la respuesta, sin exponer ninguna clave en el sitio público. Cuéntame cuándo quieres que avancemos con esa pieza.
+      <div class="file-meta" style="margin-top:8px;">Escríbele desde la barra superior en cualquier momento.</div>
     </div>
   `;
 }
@@ -543,7 +458,6 @@ function applyGraphOverrides(base) {
     const saved = localStorage.getItem(GRAPH_KEY);
     if (saved) { const g = JSON.parse(saved); if (g && g.nodes && g.root) base = g; }
   } catch (e) {}
-  // Jarvis vive como chat arriba: lo quitamos del anillo de burbujas.
   const root = base.nodes && base.nodes[base.root];
   if (root && Array.isArray(root.children)) root.children = root.children.filter(id => id !== 'jarvis');
   return base;
@@ -595,7 +509,6 @@ function openEditMenu(id, parentId) {
   if (del) del.addEventListener('click', () => deleteBubble(parentId, id));
 }
 
-// Crea una burbuja nueva como hija del nodo que se esta viendo (nivel actual).
 function createBubble() {
   const pid = history[history.length - 1];
   const p = node(pid);
@@ -641,8 +554,7 @@ function moveBubble(parentId, id, dir) {
 }
 
 /* ============================================================
-   FONDO: Tierra nocturna rotando con luces de ciudades
-   Todo dibujado en canvas — sin imágenes externas.
+   FONDO: Tierra nocturna rotando con luces de ciudades (canvas)
    ============================================================ */
 function initEarth() {
   const canvas = document.getElementById('earth');
@@ -655,15 +567,13 @@ function initEarth() {
   let cities = [];
   let rot = 0;
   let zoom = 1, zoomBase = 1, zoomPulse = 0;
-  const tilt = -0.36; // inclinación del eje (rad)
+  const tilt = -0.36;
 
-  // Control de zoom: base por profundidad + pulso al abrir una burbuja.
   window.__earth = {
     setDepth(d) { zoomBase = 1 + Math.min(Math.max(d - 1, 0), 3) * 0.13; },
     pulse() { zoomPulse = 0.14; },
   };
 
-  // Núcleos de luz aproximando regiones pobladas [lon, lat, peso]
   const CLUSTERS = [
     [2, 48, 40], [0, 52, 24], [12, 45, 18], [24, 45, 14], [37, 55, 22],
     [31, 30, 16], [35, 32, 14], [45, 30, 12], [55, 25, 10],
@@ -684,17 +594,14 @@ function initEarth() {
     CLUSTERS.forEach(([lon, lat, weight]) => {
       const n = Math.round(weight * 1.1);
       for (let i = 0; i < n; i++) {
-        const clon = lon + gauss() * 9;
-        const clat = lat + gauss() * 6;
         cities.push({
-          lon: clon * Math.PI / 180,
-          lat: clat * Math.PI / 180,
+          lon: (lon + gauss() * 9) * Math.PI / 180,
+          lat: (lat + gauss() * 6) * Math.PI / 180,
           b: rand(0.45, 1),
           tw: Math.random() * Math.PI * 2,
         });
       }
     });
-    // luces sueltas dispersas por todo el globo
     for (let i = 0; i < 140; i++) {
       cities.push({
         lon: rand(-180, 180) * Math.PI / 180,
@@ -709,32 +616,18 @@ function initEarth() {
     stars = [];
     const count = Math.round((W * H) / 7000);
     for (let i = 0; i < count; i++) {
-      stars.push({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        r: Math.random() * 1.2 + 0.2,
-        a: rand(0.2, 0.8),
-        tw: Math.random() * Math.PI * 2,
-      });
+      stars.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.2 + 0.2, a: rand(0.2, 0.8), tw: Math.random() * Math.PI * 2 });
     }
   }
 
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = window.innerWidth;
-    H = window.innerHeight;
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     buildStars();
     if (!cities.length) buildCities();
-  }
-
-  function globe() {
-    const baseR = Math.min(W, H) * 0.46;
-    return { cx: W * 0.74, cy: H * 0.5, R: baseR * zoom };
   }
 
   function draw(t) {
@@ -743,7 +636,6 @@ function initEarth() {
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, W, H);
 
-    // estrellas
     for (const s of stars) {
       const a = s.a * (0.6 + 0.4 * Math.sin(time * 1.5 + s.tw));
       ctx.globalAlpha = Math.max(0, a);
@@ -754,39 +646,26 @@ function initEarth() {
     }
     ctx.globalAlpha = 1;
 
-    // suaviza el zoom hacia su objetivo (base por profundidad + pulso)
     const zTarget = zoomBase + zoomPulse;
     zoom += (zTarget - zoom) * 0.08;
     zoomPulse *= 0.90;
 
-    const { cx, cy, R } = globe();
+    const cx = W * 0.74, cy = H * 0.5, R = Math.min(W, H) * 0.46 * zoom;
 
-    // halo atmosférico cálido
     const halo = ctx.createRadialGradient(cx, cy, R * 0.85, cx, cy, R * 1.28);
     halo.addColorStop(0, 'rgba(255, 140, 43, 0.12)');
     halo.addColorStop(0.5, 'rgba(255, 120, 40, 0.05)');
     halo.addColorStop(1, 'rgba(255, 120, 40, 0)');
     ctx.fillStyle = halo;
-    ctx.beginPath();
-    ctx.arc(cx, cy, R * 1.28, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, R * 1.28, 0, Math.PI * 2); ctx.fill();
 
-    // esfera nocturna (lado oscuro de la Tierra)
     const sphere = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.35, R * 0.1, cx, cy, R);
-    sphere.addColorStop(0, '#0b1320');
-    sphere.addColorStop(0.6, '#070b13');
-    sphere.addColorStop(1, '#02040a');
+    sphere.addColorStop(0, '#0b1320'); sphere.addColorStop(0.6, '#070b13'); sphere.addColorStop(1, '#02040a');
     ctx.fillStyle = sphere;
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
 
-    // clip al disco para dibujar las luces
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.clip();
-
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.clip();
     const cosT = Math.cos(tilt), sinT = Math.sin(tilt);
     for (const c of cities) {
       const lambda = c.lon + rot;
@@ -794,45 +673,33 @@ function initEarth() {
       let x = cosLat * Math.sin(lambda);
       let y = Math.sin(c.lat);
       let z = cosLat * Math.cos(lambda);
-      // inclinación sobre eje X
       const y2 = y * cosT - z * sinT;
       const z2 = y * sinT + z * cosT;
       y = y2; z = z2;
-      if (z <= 0.02) continue; // cara oculta
-
+      if (z <= 0.02) continue;
       const sx = cx + x * R;
       const sy = cy - y * R;
-      const depth = Math.pow(z, 0.6);            // oscurecimiento hacia el borde
+      const depth = Math.pow(z, 0.6);
       const tw = 0.75 + 0.25 * Math.sin(time * 2 + c.tw);
       const alpha = Math.min(1, c.b * depth * tw);
       const size = 0.6 + c.b * 1.4;
-
       const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, size * 2.4);
       g.addColorStop(0, `rgba(255, 214, 150, ${alpha})`);
       g.addColorStop(0.4, `rgba(255, 160, 70, ${alpha * 0.8})`);
       g.addColorStop(1, 'rgba(255, 130, 40, 0)');
       ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(sx, sy, size * 2.4, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(sx, sy, size * 2.4, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
 
-    // sombreado de borde para dar volumen
     const edge = ctx.createRadialGradient(cx, cy, R * 0.55, cx, cy, R);
-    edge.addColorStop(0, 'rgba(0,0,0,0)');
-    edge.addColorStop(1, 'rgba(0,0,0,0.55)');
+    edge.addColorStop(0, 'rgba(0,0,0,0)'); edge.addColorStop(1, 'rgba(0,0,0,0.55)');
     ctx.fillStyle = edge;
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
 
-    // fino anillo de atmósfera
     ctx.strokeStyle = 'rgba(255, 170, 90, 0.18)';
     ctx.lineWidth = 1.4;
-    ctx.beginPath();
-    ctx.arc(cx, cy, R + 1, 0, Math.PI * 2);
-    ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, R + 1, 0, Math.PI * 2); ctx.stroke();
 
     if (!prefersReduced) rot += 0.0016;
     requestAnimationFrame(draw);
@@ -844,8 +711,7 @@ function initEarth() {
 }
 
 /* ============================================================
-   JARVIS — chat siempre abierto (modo de prueba: respuestas
-   simuladas, sin IA real todavía).
+   JARVIS — chat arriba, conectado al backend (Claude)
    ============================================================ */
 function initJarvis() {
   const root = document.getElementById('jarvis');
@@ -855,12 +721,7 @@ function initJarvis() {
   const toggle = document.getElementById('jarvisToggle');
   if (!root || !form || !fieldEl || !msgs) return;
 
-  const DEMO_REPLIES = [
-    'Recibido. Estoy en modo de prueba — todavía no estoy conectado a la IA, pero la interfaz ya quedó lista.',
-    'Anotado. Cuando conectemos el backend voy a poder responderte de verdad; por ahora esto es una demo del diseño.',
-    '¡Listo! En cuanto enchufemos la API te respondo con información real. Esto es solo una vista previa.',
-    'Te leo. Aún no proceso respuestas reales, pero así se va a sentir el chat cuando esté funcionando.',
-  ];
+  const convo = []; // historial {role, content} para contexto
 
   function addMessage(text, who) {
     const el = document.createElement('div');
@@ -871,24 +732,38 @@ function initJarvis() {
     return el;
   }
 
-  // mensaje de bienvenida
-  addMessage('Hola Vicente. Soy Jarvis. Pregúntame lo que quieras sobre tus ramos. (Estoy en modo de prueba por ahora.)', 'bot');
+  addMessage('Hola Vicente. Soy Jarvis. Pregúntame lo que quieras sobre tus ramos.', 'bot');
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const text = fieldEl.value.trim();
     if (!text) return;
     addMessage(text, 'user');
     fieldEl.value = '';
 
-    const typing = addMessage('Jarvis está escribiendo…', 'bot');
+    const typing = addMessage('Jarvis está pensando…', 'bot');
     typing.classList.add('typing');
 
-    setTimeout(() => {
+    try {
+      const res = await fetch(BACKEND + '/jarvis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history: convo.slice(-10) }),
+      });
+      const data = await res.json().catch(() => ({}));
       typing.remove();
-      const reply = DEMO_REPLIES[Math.floor(Math.random() * DEMO_REPLIES.length)];
+      if (!res.ok || data.error) {
+        addMessage('Ups, no pude responder ahora. ' + (data.error || ('HTTP ' + res.status)), 'bot');
+        return;
+      }
+      const reply = data.reply || '(sin respuesta)';
       addMessage(reply, 'bot');
-    }, 700 + Math.random() * 700);
+      convo.push({ role: 'user', content: text });
+      convo.push({ role: 'assistant', content: reply });
+    } catch (err) {
+      typing.remove();
+      addMessage('No me pude conectar con el servidor. Revisa tu conexión.', 'bot');
+    }
   });
 
   toggle.addEventListener('click', () => {
