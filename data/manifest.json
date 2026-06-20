@@ -1,0 +1,362 @@
+{
+  "generated": "2026-06-19",
+  "courses": [
+    {
+      "slug": "algebra",
+      "displayName": "Álgebra",
+      "icon": "📐",
+      "color": "#6C5CE7",
+      "categories": [
+        {
+          "key": "Notes",
+          "label": "Apuntes",
+          "icon": "📝",
+          "files": [
+            {
+              "name": "Conjuntos.pdf",
+              "path": "files/algebra/Notes/Conjuntos.pdf",
+              "size": 8683
+            },
+            {
+              "name": "Resumen Números complejos.pdf",
+              "path": "files/algebra/Notes/Resumen Números complejos.pdf",
+              "size": 51193
+            },
+            {
+              "name": "Resumen Polinomios.pdf",
+              "path": "files/algebra/Notes/Resumen Polinomios.pdf",
+              "size": 51788
+            },
+            {
+              "name": "Resumen Progresiones y T. del binomio.pdf",
+              "path": "files/algebra/Notes/Resumen Progresiones y T. del binomio.pdf",
+              "size": 43466
+            },
+            {
+              "name": "Resumen Sumatorias.pdf",
+              "path": "files/algebra/Notes/Resumen Sumatorias.pdf",
+              "size": 113941
+            },
+            {
+              "name": "Resumen trigonometría v3.pdf",
+              "path": "files/algebra/Notes/Resumen trigonometría v3.pdf",
+              "size": 94435
+            },
+            {
+              "name": "notas trigonometria 2.jpg",
+              "path": "files/algebra/Notes/notas trigonometria 2.jpg",
+              "size": 188088
+            }
+          ]
+        },
+        {
+          "key": "Assignments",
+          "label": "Guías y Ejercicios",
+          "icon": "📚",
+          "files": [
+            {
+              "name": "Ejercicios resueltos Números Naturales.pdf",
+              "path": "files/algebra/Assignments/Ejercicios resueltos Números Naturales.pdf",
+              "size": 124008
+            },
+            {
+              "name": "Ejercicios resueltos númros complejos.pdf",
+              "path": "files/algebra/Assignments/Ejercicios resueltos númros complejos.pdf",
+              "size": 215928
+            },
+            {
+              "name": "Ejercicios resueltos polinomios.pdf",
+              "path": "files/algebra/Assignments/Ejercicios resueltos polinomios.pdf",
+              "size": 111971
+            },
+            {
+              "name": "Guia 5 polinomios.pdf",
+              "path": "files/algebra/Assignments/Guia 5 polinomios.pdf",
+              "size": 233653
+            },
+            {
+              "name": "Guía 3 Trigonometría.pdf",
+              "path": "files/algebra/Assignments/Guía 3 Trigonometría.pdf",
+              "size": 482340
+            },
+            {
+              "name": "Trigonometría.pdf",
+              "path": "files/algebra/Assignments/Trigonometría.pdf",
+              "size": 274916
+            },
+            {
+              "name": "naturales.pdf",
+              "path": "files/algebra/Assignments/naturales.pdf",
+              "size": 134689
+            }
+          ]
+        },
+        {
+          "key": "Exams",
+          "label": "Exámenes",
+          "icon": "🧪",
+          "files": [
+            {
+              "name": "Guia_Pre_Solemne_2_I_A_2026_1.pdf",
+              "path": "files/algebra/Exams/Guia_Pre_Solemne_2_I_A_2026_1.pdf",
+              "size": 221488
+            },
+            {
+              "name": "IA_ReforzamientoM1_SolemneN1_Formulario (1).pdf",
+              "path": "files/algebra/Exams/IA_ReforzamientoM1_SolemneN1_Formulario (1).pdf",
+              "size": 142656
+            }
+          ]
+        },
+        {
+          "key": "Syllabus",
+          "label": "Programa",
+          "icon": "📋",
+          "files": [
+            {
+              "name": "Introducción_Algebra_Programa_2026-1.pdf",
+              "path": "files/algebra/Syllabus/Introducción_Algebra_Programa_2026-1.pdf",
+              "size": 347124
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "calculo",
+      "displayName": "Cálculo",
+      "icon": "📈",
+      "color": "#00B894",
+      "categories": [
+        {
+          "key": "Notes",
+          "label": "Apuntes",
+          "icon": "📝",
+          "files": [
+            {
+              "name": "Apuntes Godeanos 👾.pdf",
+              "path": "files/calculo/Notes/Apuntes Godeanos 👾.pdf",
+              "size": 8015009
+            }
+          ]
+        },
+        {
+          "key": "Assignments",
+          "label": "Guías y Ejercicios",
+          "icon": "📚",
+          "files": [
+            {
+              "name": "AAAGuíaDeDerivadas2023.pdf",
+              "path": "files/calculo/Assignments/AAAGuíaDeDerivadas2023.pdf",
+              "size": 2179626
+            },
+            {
+              "name": "Ejercicios resueltos - Limites al infinito y asintotas.pdf",
+              "path": "files/calculo/Assignments/Ejercicios resueltos - Limites al infinito y asintotas.pdf",
+              "size": 487256
+            },
+            {
+              "name": "Ejercicios resueltos - Regla de LHopital.pdf",
+              "path": "files/calculo/Assignments/Ejercicios resueltos - Regla de LHopital.pdf",
+              "size": 167742
+            },
+            {
+              "name": "GUIA DE LIMITES resuelta.docx",
+              "path": "files/calculo/Assignments/GUIA DE LIMITES resuelta.docx",
+              "size": 1194453
+            },
+            {
+              "name": "Guia 2 - Limites.pdf",
+              "path": "files/calculo/Assignments/Guia 2 - Limites.pdf",
+              "size": 160679
+            },
+            {
+              "name": "Guia 4 - Derivadas (1).pdf",
+              "path": "files/calculo/Assignments/Guia 4 - Derivadas (1).pdf",
+              "size": 145000
+            }
+          ]
+        },
+        {
+          "key": "Exams",
+          "label": "Exámenes",
+          "icon": "🧪",
+          "files": [
+            {
+              "name": "EXAMEN_CI_2024_2.pdf",
+              "path": "files/calculo/Exams/EXAMEN_CI_2024_2.pdf",
+              "size": 102517
+            },
+            {
+              "name": "EXAMEN_CI_2025_1(PAUTA).pdf",
+              "path": "files/calculo/Exams/EXAMEN_CI_2025_1(PAUTA).pdf",
+              "size": 151100
+            },
+            {
+              "name": "EXAMEN_CI_2025_1.pdf",
+              "path": "files/calculo/Exams/EXAMEN_CI_2025_1.pdf",
+              "size": 129582
+            },
+            {
+              "name": "Solemne_1_CI_2024_2.pdf",
+              "path": "files/calculo/Exams/Solemne_1_CI_2024_2.pdf",
+              "size": 111202
+            },
+            {
+              "name": "Solemne_2_CI_2024_2.pdf",
+              "path": "files/calculo/Exams/Solemne_2_CI_2024_2.pdf",
+              "size": 177686
+            },
+            {
+              "name": "Solemne_2_CI_2025_1(PAUTA).pdf",
+              "path": "files/calculo/Exams/Solemne_2_CI_2025_1(PAUTA).pdf",
+              "size": 150532
+            },
+            {
+              "name": "Solemne_2_CI_2025_1.pdf",
+              "path": "files/calculo/Exams/Solemne_2_CI_2025_1.pdf",
+              "size": 111422
+            },
+            {
+              "name": "Solemne_2_CI_2025_2(PAUTA).pdf",
+              "path": "files/calculo/Exams/Solemne_2_CI_2025_2(PAUTA).pdf",
+              "size": 148050
+            },
+            {
+              "name": "Solemne_2_CI_2025_2.pdf",
+              "path": "files/calculo/Exams/Solemne_2_CI_2025_2.pdf",
+              "size": 109860
+            }
+          ]
+        },
+        {
+          "key": "Syllabus",
+          "label": "Programa",
+          "icon": "📋",
+          "files": [
+            {
+              "name": "Introducción_Calculo_Programa_2026-1.pdf",
+              "path": "files/calculo/Syllabus/Introducción_Calculo_Programa_2026-1.pdf",
+              "size": 311870
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "quimica",
+      "displayName": "Química",
+      "icon": "⚗️",
+      "color": "#E17055",
+      "categories": [
+        {
+          "key": "Notes",
+          "label": "Apuntes",
+          "icon": "📝",
+          "files": [
+            {
+              "name": "PPT unidad 1 quimica.pdf",
+              "path": "files/quimica/Notes/PPT unidad 1 quimica.pdf",
+              "size": 19239563
+            },
+            {
+              "name": "unidad2.pdf",
+              "path": "files/quimica/Notes/unidad2.pdf",
+              "size": 1194391
+            },
+            {
+              "name": "unidad3 quimica.pdf",
+              "path": "files/quimica/Notes/unidad3 quimica.pdf",
+              "size": 10040941
+            },
+            {
+              "name": "unidad4 quimica.pdf",
+              "path": "files/quimica/Notes/unidad4 quimica.pdf",
+              "size": 17155738
+            }
+          ]
+        },
+        {
+          "key": "Assignments",
+          "label": "Guías y Ejercicios",
+          "icon": "📚",
+          "files": []
+        },
+        {
+          "key": "Exams",
+          "label": "Exámenes",
+          "icon": "🧪",
+          "files": [
+            {
+              "name": "Pautas Evaluaciones 2025 1 Semestre.pdf",
+              "path": "files/quimica/Exams/Pautas Evaluaciones 2025 1 Semestre.pdf",
+              "size": 7480903
+            }
+          ]
+        },
+        {
+          "key": "Syllabus",
+          "label": "Programa",
+          "icon": "📋",
+          "files": [
+            {
+              "name": "Programa Asignatura Química 1 SEM 2026.docx.pdf",
+              "path": "files/quimica/Syllabus/Programa Asignatura Química 1 SEM 2026.docx.pdf",
+              "size": 237769
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "programacion",
+      "displayName": "Programación",
+      "icon": "💻",
+      "color": "#0984E3",
+      "categories": [
+        {
+          "key": "Notes",
+          "label": "Apuntes",
+          "icon": "📝",
+          "files": []
+        },
+        {
+          "key": "Assignments",
+          "label": "Guías y Ejercicios",
+          "icon": "📚",
+          "files": [
+            {
+              "name": "Laboratorio_2.ipynb",
+              "path": "files/programacion/Assignments/Laboratorio_2.ipynb",
+              "size": 3204
+            }
+          ]
+        },
+        {
+          "key": "Exams",
+          "label": "Exámenes",
+          "icon": "🧪",
+          "files": [
+            {
+              "name": "Solemne 1 2023-1.pdf",
+              "path": "files/programacion/Exams/Solemne 1 2023-1.pdf",
+              "size": 191816
+            }
+          ]
+        },
+        {
+          "key": "Syllabus",
+          "label": "Programa",
+          "icon": "📋",
+          "files": [
+            {
+              "name": "04_CIT1100.pdf",
+              "path": "files/programacion/Syllabus/04_CIT1100.pdf",
+              "size": 109018
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

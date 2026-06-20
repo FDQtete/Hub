@@ -1,0 +1,63 @@
+{
+  "status": "live",
+  "note": "Sincronizado desde Gmail el 2026-06-19. Las fechas exactas de algunos avisos vienen del cuerpo completo del correo (Canvas no detalla siempre la fecha en el resumen) — revisa el correo original si necesitas la hora exacta.",
+  "lastSynced": "2026-06-19",
+  "items": [
+    {
+      "subject": "Álgebra",
+      "title": "Solemne 2 — sala de la sesión",
+      "priority": "alta",
+      "date": "2026-06-19 (aviso del mismo día)",
+      "source": "gmail: reporte Canvas 19 de Jun",
+      "detail": "Aviso de la sala asignada para el Solemne 2 de Introducción al Álgebra."
+    },
+    {
+      "subject": "Álgebra",
+      "title": "Pauta Control 3 y Guía de repaso (Solemne 2)",
+      "priority": "alta",
+      "date": "2026-06-13",
+      "source": "gmail: Biblioteca de Recursos ICB",
+      "detail": "Material de apoyo publicado para preparar el Solemne 2."
+    },
+    {
+      "subject": "Álgebra / Cálculo",
+      "title": "Mesas de estudio de cálculo (apoyo Intro. Álgebra)",
+      "priority": "media",
+      "date": "2026-06-15",
+      "source": "gmail: reporte Canvas 15 de Jun",
+      "detail": "Sesiones de apoyo/estudio disponibles antes del Solemne 2."
+    },
+    {
+      "subject": "Química",
+      "title": "Mesa de estudio Química",
+      "priority": "media",
+      "date": "2026-06-12",
+      "source": "gmail: reporte Canvas 12 de Jun",
+      "detail": "Biblioteca de Recursos ICB — sesión de apoyo."
+    },
+    {
+      "subject": "Programación",
+      "title": "Aviso sobre revisión de controles",
+      "priority": "media",
+      "date": "2026-06-10",
+      "source": "gmail: reporte Canvas 10 de Jun",
+      "detail": "Comunicado del profesor sobre cómo se revisarán los controles."
+    },
+    {
+      "subject": "UDP — administrativo",
+      "title": "Encuesta de Evaluación Docente (EED) 1er semestre",
+      "priority": "baja",
+      "date": "Plazo: 2026-06-15 a 2026-07-10",
+      "source": "gmail: comunicado UDP",
+      "detail": "No es una evaluación de curso, pero tiene plazo — conviene responderla antes del 10 de julio."
+    },
+    {
+      "subject": "Álgebra",
+      "title": "Notas Taller N°3 publicadas",
+      "priority": "baja",
+      "date": "2026-06-17",
+      "source": "gmail: reporte Canvas 17 de Jun",
+      "detail": "Ya calificado — informativo, no requiere acción."
+    }
+  ]
+}

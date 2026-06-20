@@ -1,0 +1,53 @@
+{
+  "root": "root",
+  "nodes": {
+    "root": {
+      "label": "Hub",
+      "icon": "🎓",
+      "type": "group",
+      "children": ["algebra", "calculo", "quimica", "programacion", "estudios", "jarvis", "tareas", "negocios", "finanzas"]
+    },
+
+    "algebra": { "label": "Álgebra", "icon": "📐", "type": "course", "slug": "algebra" },
+    "calculo": { "label": "Cálculo", "icon": "📈", "type": "course", "slug": "calculo" },
+    "quimica": { "label": "Química", "icon": "⚗️", "type": "course", "slug": "quimica" },
+    "programacion": { "label": "Programación", "icon": "💻", "type": "course", "slug": "programacion" },
+
+    "estudios": {
+      "label": "Estudios",
+      "icon": "🧭",
+      "type": "group",
+      "children": ["canvas", "evaluaciones", "resumen", "avisos"]
+    },
+    "canvas": { "label": "Canvas", "icon": "🏫", "type": "panel:canvas" },
+    "evaluaciones": { "label": "Próximas evaluaciones", "icon": "📅", "type": "panel:evaluaciones" },
+    "resumen": { "label": "Resumen semanal", "icon": "🧠", "type": "panel:resumen" },
+    "avisos": { "label": "Configurar avisos", "icon": "⚙️", "type": "panel:avisos" },
+
+    "jarvis": {
+      "label": "Jarvis",
+      "icon": "🤖",
+      "type": "panel:jarvis",
+      "note": "Sub-agente personal. Hoy: placeholder. Próximo: chat de texto vía backend seguro, luego voz (Web Speech API)."
+    },
+
+    "tareas": {
+      "label": "Tareas",
+      "icon": "✅",
+      "type": "panel:placeholder",
+      "note": "Próxima área: lista de tareas personales, independiente de los ramos. Dime qué quieres trackear (formato, recordatorios, etc.) y la construimos."
+    },
+    "negocios": {
+      "label": "Negocios",
+      "icon": "💼",
+      "type": "panel:placeholder",
+      "note": "Espacio reservado para tus proyectos/negocios. Cuando me cuentes qué necesitas ver aquí (clientes, ideas, números) lo definimos."
+    },
+    "finanzas": {
+      "label": "Finanzas",
+      "icon": "💰",
+      "type": "panel:placeholder",
+      "note": "Espacio reservado para finanzas personales. Podría conectarse a una planilla o a un resumen manual — definimos el formato cuando quieras."
+    }
+  }
+}

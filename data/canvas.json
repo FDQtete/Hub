@@ -1,0 +1,5 @@
+{
+  "status": "pending_setup",
+  "note": "Se llena automáticamente una vez conectada la API de Canvas (token + dominio).",
+  "courses": []
+}
