@@ -8,21 +8,23 @@
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Fondo: Tierra nocturna rotando + cielo estrellado (dibujado en canvas) -->
   <canvas id="earth" aria-hidden="true"></canvas>
 
   <div id="app">
     <header id="topbar">
       <button id="backBtn" class="back-btn hidden" aria-label="Volver">← Volver</button>
       <h1 id="crumbTitle">UDP Hub</h1>
+      <div id="clock" class="clock" aria-label="Fecha y hora">
+        <span id="clockTime" class="clock-time">--:--</span>
+        <span id="clockDate" class="clock-date"></span>
+      </div>
     </header>
 
-    <!-- Jarvis: chat siempre abierto, arriba y al centro -->
     <section id="jarvis" class="jarvis" aria-label="Asistente Jarvis">
       <div class="jarvis-head">
         <span class="jarvis-dot" aria-hidden="true"></span>
         <span class="jarvis-name">Jarvis</span>
-        <span class="jarvis-status">en línea · prueba</span>
+        <span class="jarvis-status">en línea</span>
         <button id="jarvisToggle" class="jarvis-toggle" aria-label="Minimizar chat">▾</button>
       </div>
       <div id="jarvisMessages" class="jarvis-messages"></div>
@@ -50,6 +52,7 @@
     </section>
   </div>
 
+  <script src="earth.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
